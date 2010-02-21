@@ -19,6 +19,8 @@ my $enumeach=0;
 my $tryall=0;
 my $usehttp1=0;
 
+my $uri;
+
 # known HTTP methods
 my @methods=('GET','HEAD','PUT','DELETE','POST','SEARCH','TRACE','OPTIONS','DELETE','CONNECT','PROPFIND','PROPPATCH','TRACK','DEBUG');
 # http codes which says that specific method is allowed
@@ -35,6 +37,7 @@ my $result = GetOptions (
 	"c|codes" => \$showcodes,
 	"m|method" => \$showmethod,
 	"1|http1" => \$usehttp1,
+	"u|uri=s" => \$uri,
 	"v|verbose"  => \$verbose,
 	"d|debug" => \$showdebug,
 	"h|help" => \&help
@@ -48,6 +51,10 @@ if ($tryall) {
 	$enumoptionstar=1;
 	$enumeach=1;
 }
+
+unless ($uri) {
+	$uri="/";
+}	
 
 if ($enumnonexistant==0 or $enumoptions==0 or $enumoptionstar==0 or  $enumeach==0) {
 	$enumeach=1;
@@ -109,9 +116,9 @@ print STDERR "Processing $prot:$host:$port\n" if ($verbose>0);
 
 if ($enumoptions) {
 	print "$prot://$host:$port;";
-	print "OPTIONS /;" if ($showmethod);
+	print "OPTIONS $uri;" if ($showmethod);
 	my %resp;
-	my $req = LW2::http_new_request( host=>$host, uri=>'/', port=> $port, protocol=> 'HTTP', ssl => $ssl, method=> "OPTIONS");
+	my $req = LW2::http_new_request( host=>$host, uri=>$uri, port=> $port, protocol=> 'HTTP', ssl => $ssl, method=> "OPTIONS");
 	${$req}{'whisker'}->{'version'}="1.0" if ($usehttp1);
 	LW2::http_fixup_request(\%{$req});
 	if (LW2::http_do_request(\%{$req},\%resp)) {
@@ -145,7 +152,7 @@ if ($enumnonexistant) {
 	print "$prot://$host:$port;";
 	print "NONEXISTANT;" if ($showmethod);
 	my %resp;
-	my $req = LW2::http_new_request( host=>$host, uri=>'/', port=> $port, protocol=> 'HTTP', ssl => $ssl, method=> $nonexistantmethod );
+	my $req = LW2::http_new_request( host=>$host, uri=>$uri, port=> $port, protocol=> 'HTTP', ssl => $ssl, method=> $nonexistantmethod );
 	${$req}{'whisker'}->{'version'}="1.0" if ($usehttp1);
 	LW2::http_fixup_request(\%{$req});
 	if (LW2::http_do_request(\%{$req},\%resp)) {
@@ -164,7 +171,7 @@ if ($enumeach) {
 	print "CHECKEACH;" if ($showmethod);
 foreach my $method (@methods) {
 	my %resp;
-	my $req = LW2::http_new_request( host=>$host, uri=>'/', port=> $port, protocol=> 'HTTP', ssl => $ssl, method=> $method );
+	my $req = LW2::http_new_request( host=>$host, uri=>$uri, port=> $port, protocol=> 'HTTP', ssl => $ssl, method=> $method );
 	${$req}{'whisker'}->{'version'}="1.0" if ($usehttp1);
 	LW2::http_fixup_request(\%{$req});
 	print STDERR Dumper($req) if ($verbose>10);
@@ -211,6 +218,7 @@ sub help
 	print "	-s	show all HTTP methods in each trick (useful with -c and -e)\n";
 	print "	-m	show trick tried in output\n";
 	print "	-1	use HTTP/1.0\n";
+	print "	-u	use URL as argument (default: $uri)\n";
 	print "	-v	verbose\n";
 	print "	-d 	be even more verbose (for debugging!)\n";
 	print "	-h 	this help message\n";
