@@ -1,0 +1,23 @@
+http-get-methods
+================
+Reads URLs from stdin  and spits out HTTP methods to stdout.
+Copyright (C) Vlatko Kosturjak, Kost. Distributed under GPL.
+
+It tries all known methods:
+- OPTIONS /
+- OPTIONS *
+- NONEXISTANT HTTP method
+- try each known method
+
+Examples
+========
+./http-get-methods.pl -a -m -c < urls.txt
+
+where urls.txt can be in form of:
+http://url 
+server.domain:port
+server.domain
+
+
+
+
